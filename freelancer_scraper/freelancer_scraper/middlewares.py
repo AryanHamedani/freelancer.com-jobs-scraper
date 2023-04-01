@@ -112,10 +112,12 @@ class VisitedJobsMiddleware:
 
     @classmethod
     def from_crawler(cls, crawler):
-        return cls(
+        s = cls(
             mongo_uri=crawler.settings.get("MONGO_URI"),
             mongo_db=crawler.settings.get("MONGO_DATABASE"),
         )
+        crawler.signals.connect(s.open_spider, signal=signals.spider_opened)
+        return s
 
     def open_spider(self, spider):
         self.client = pymongo.MongoClient(self.mongo_uri)

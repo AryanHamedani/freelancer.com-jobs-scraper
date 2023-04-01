@@ -19,3 +19,7 @@ class JobItem(scrapy.Item):
     bids = scrapy.Field()
     customer_other_jobs = scrapy.Field()
     similar_jobs = scrapy.Field()
+    project_duration = scrapy.Field()
+    rating = scrapy.Field()
+    verifications_status = scrapy.Field()
+    priority_score = scrapy.Field()
