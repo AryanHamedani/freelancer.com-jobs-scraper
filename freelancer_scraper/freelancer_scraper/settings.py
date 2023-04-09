@@ -97,3 +97,31 @@ TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
 MONGO_URI = os.environ.get("MONGO_URI")
 MONGO_DATABASE = os.environ.get("MONGO_DATABASE")
+USER_SKILLS = [
+    "Python",
+    "Django",
+    "Flask",
+    "FastAPI",
+    "Database Design",
+    "PostgreSQL",
+    "MongoDB",
+    "Celery",
+    "Web Development",
+    "Back-End Development",
+    "RESTful API",
+    "Linux",
+    "Docker",
+    "Web Scraping",
+    "BeautifulSoup 4",
+    "Selenium",
+    "Scrapy",
+    "Basic Front-End Development",
+    "HTML",
+    "CSS",
+    "JavaScript",
+    "Telegram Bot Design",
+    "python-telegram-bot",
+    "Pyrogram",
+    "Bootstrap",
+    "Tailwind",
+]

@@ -1,6 +1,8 @@
 import scrapy
 from freelancer_scraper.items import JobItem
 from freelancer_scraper.utils import is_skills_match
+import re
+
 
 class JobsSpider(scrapy.Spider):
     name = "jobs"
@@ -48,14 +50,6 @@ class JobsSpider(scrapy.Spider):
         for link in item_links:
             yield response.follow(link, callback=self.parse_item)
 
-        paginations_partial_url = response.xpath(
-            "//div[@id='bottom-pagination']//a/@href"
-        ).getall()
-
-        for partial_url in paginations_partial_url:
-            pagination_url = response.urljoin(partial_url + "?results=100")
-            yield response.follow(pagination_url, callback=self.parse)
-
     def parse_item(self, response):
         item = JobItem()
         item["title"] = response.xpath(
@@ -65,7 +59,17 @@ class JobsSpider(scrapy.Spider):
         item["status"] = response.xpath(
             '//main[@id="main"]//div[contains(@class, "PageProjectViewLogout-header-label")]/span/text()'
         ).get()
-        item["budget"] = response.xpath('//span[text()="Budget "]/../text()').get()
+        budget = response.xpath('//span[text()="Budget "]/../text()').get()
+        match = re.search(r"([^\d]*)(\d+)-(\d+)\s*(\w+)", budget)
+        if match:
+            min_price = int(match.group(2))
+            max_price = int(match.group(3))
+            currency_code = match.group(4)
+        else:
+            min_price = max_price = currency_code = None
+        item["min_budget"] = min_price
+        item["max_budget"] = max_price
+        item["currency_code"] = currency_code
         item["description"] = response.xpath(
             '//p[text()="Job Description: "]/following-sibling::*[following::p/strong[text()="Skills:"]]/text()'
         ).getall()
@@ -75,9 +79,41 @@ class JobsSpider(scrapy.Spider):
         item["project_id"] = response.xpath(
             '//strong[text()="Project ID:"]/../text()'
         ).get()
-        item["bids"] = response.xpath(
+        bid_sentence = response.xpath(
             '//h2[contains(text(), "bidding on average")]/text()'
         ).get()
-        description = " ".join(item["description"])
-        item["skills_match"] = is_skills_match(description)
+        freelancers_match = re.search(r"(\d+)\s*freelancers", bid_sentence)
+        freelancer_count = (
+            int(freelancers_match.group(1)) if freelancers_match else None
+        )
+        average_bid_match = re.search(r"average\s*[^\d]*(\d+)", bid_sentence)
+        average_bid_price = (
+            int(average_bid_match.group(1)) if average_bid_match else None
+        )
+        item["count_of_bids"] = freelancer_count
+        item["average_of_bids"] = average_bid_price
+        item["rating"] = response.xpath(
+            "//span[contains(@class, 'Rating')]/@data-star_rating"
+        ).get()
+        review_count_sentence = response.xpath(
+            "//span[contains(@class, 'Rating-review')]/text()"
+        ).get()
+        item["count_of_reviews"] = int(re.findall(r"\d+", review_count_sentence)[0])
+        item["verification_status"] = {
+            "profile_completion": bool(
+                response.xpath('//li[@data-qtsb-label="profile-complete"]').get()
+            ),
+            "payment_verified": bool(
+                response.xpath('//li[@data-qtsb-label="payment-verified"]').get()
+            ),
+            "email_verified": bool(
+                response.xpath('//li[@data-qtsb-label="email-verified"]').get()
+            ),
+            "phone_verified": bool(
+                response.xpath('//li[@data-qtsb-label="phone-verified"]').get()
+            ),
+            "deposit_verified": bool(
+                response.xpath('//li[@data-qtsb-label="deposit-made"]').get()
+            ),
+        }
         return item
