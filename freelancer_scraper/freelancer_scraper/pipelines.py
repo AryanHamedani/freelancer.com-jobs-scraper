@@ -7,7 +7,7 @@
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
 import pymongo
-from freelancer_scraper.utils import is_skills_match, generate_bid
+from freelancer_scraper.tasks import process_and_save_item
 
 
 class JobItemPipeline:
@@ -15,16 +15,6 @@ class JobItemPipeline:
         self.mongo_uri = mongo_uri
         self.mongo_db = mongo_db
         self.user_skills = user_skills
-
-    # user_skills = ["Python", "Data Science", "Machine Learning"]
-    # weights = {
-    #     "budget": 0.25,
-    #     "project_duration": 0.1,
-    #     "skills_match": 0.35,
-    #     "customer_rating": 0.1,
-    #     "bid_competition": 0.1,
-    #     "verifications_status": 0.1,
-    # }
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -44,23 +34,9 @@ class JobItemPipeline:
     def process_item(self, item, spider):
         adapter = ItemAdapter(item)
 
-        existing_item = self.db.jobs.find_one({"url": adapter["url"]})
-        if existing_item:
-            spider.logger.info(f"Item already exists: {adapter['url']}")
-            return item
-        gpt_response = is_skills_match(
-            " ".join(adapter["description"]), user_skills=self.user_skills
+        # Call the Celery task for processing and saving the item
+        result = process_and_save_item.delay(
+            adapter.asdict(), spider.settings.get("MONGO_DATABASE"), self.user_skills
         )
-        adapter["is_skill_match"] = gpt_response[0]
-        adapter["gpt_skill_match_response"] = gpt_response[1]
-        if (
-            adapter["count_of_bids"] < 50
-            and (not adapter["currency_code"] == "INR")
-            and gpt_response[0] == 1
-        ):
-            adapter["is_bided"] = True
-            adapter["bid_description"] = generate_bid(
-                adapter["description"], self.user_skills
-            )
-        self.db.jobs.insert_one(adapter.asdict())
+        spider.logger.info(result.get())
         return item
