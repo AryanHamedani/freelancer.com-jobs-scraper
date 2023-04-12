@@ -7,10 +7,6 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
 BOT_NAME = "freelancer_scraper"
 
 SPIDER_MODULES = ["freelancer_scraper.spiders"]
@@ -97,31 +93,5 @@ TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
 MONGO_URI = os.environ.get("MONGO_URI")
 MONGO_DATABASE = os.environ.get("MONGO_DATABASE")
-USER_SKILLS = [
-    "Python",
-    "Django",
-    "Flask",
-    "FastAPI",
-    "Database Design",
-    "PostgreSQL",
-    "MongoDB",
-    "Celery",
-    "Web Development",
-    "Back-End Development",
-    "RESTful API",
-    "Linux",
-    "Docker",
-    "Web Scraping",
-    "BeautifulSoup 4",
-    "Selenium",
-    "Scrapy",
-    "Basic Front-End Development",
-    "HTML",
-    "CSS",
-    "JavaScript",
-    "Telegram Bot Design",
-    "python-telegram-bot",
-    "Pyrogram",
-    "Bootstrap",
-    "Tailwind",
-]
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND")

@@ -21,8 +21,3 @@ class JobItem(scrapy.Item):
     rating = scrapy.Field()
     count_of_reviews = scrapy.Field()
     verification_status = scrapy.Field()
-    priority_score = scrapy.Field()
-    gpt_skill_match_response = scrapy.Field()
-    is_skill_match = scrapy.Field()
-    is_bided = scrapy.Field()
-    bid_description = scrapy.Field()

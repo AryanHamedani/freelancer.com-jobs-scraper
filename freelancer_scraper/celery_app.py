@@ -1,22 +1,12 @@
 from pymongo import MongoClient
 from celery import Celery
+import os
 
 app = Celery(
     "freelancer_scraper",
-    broker="pyamqp://guest@localhost//",
-    backend="redis://localhost",
+    broker=os.environ.get("CELERY_BROKER_URL"),
+    backend=os.environ.get("CELERY_RESULT_BACKEND"),
     include=["freelancer_scraper.tasks"],
 )
 
-app.conf.update(
-    task_routes={
-        "freelancer_scraper.tasks.process_and_save_item": {"queue": "processing"},
-    },
-    task_serializer="json",
-    result_serializer="json",
-    accept_content=["json"],
-    timezone="UTC",
-    enable_utc=True,
-)
-
-mongo_client = MongoClient()
+mongo_client = MongoClient(os.environ.get("MONGO_URI"))

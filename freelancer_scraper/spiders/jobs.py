@@ -1,6 +1,5 @@
 import scrapy
 from freelancer_scraper.items import JobItem
-from freelancer_scraper.utils import is_skills_match
 import re
 
 

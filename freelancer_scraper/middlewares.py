@@ -129,5 +129,3 @@ class VisitedJobsMiddleware:
     def process_request(self, request, spider):
         if self.db.jobs.find_one({"url": request.url}):
             raise IgnoreRequest(f"URL already visited: {request.url}")
-        else:
-            return None
