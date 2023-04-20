@@ -1,0 +1,19 @@
+version: "3.9"
+services:
+  scraper:
+    build: .
+    environment:
+      - MONGO_URI=mongodb://mongo:27017
+      - MONGO_DATABASE=freelancer_scraper
+      - CELERY_BROKER_URL=redis://redis:6379
+      - CELERY_RESULT_BACKEND=redis://redis:6379
+    depends_on:
+      - mongo
+      - redis
+    command: bash -c "celery -A freelancer_scraper.celery_app worker -l info & scrapy crawl jobs"
+  mongo:
+    image: "mongo"
+  redis:
+    image: "redis"
+volumes:
+  mongodb_data:
